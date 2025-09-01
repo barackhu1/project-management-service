@@ -16,3 +16,11 @@ def insert_user(conn, username, hashed_password):
         except Exception as e:
             conn.rollback()
             raise e
+
+def get_user_by_username(conn, username):
+    with conn.cursor() as cur:
+        cur.execute(
+            "SELECT * FROM users WHERE username = %s",
+            (username,)
+        )
+        return cur.fetchone()

@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 
-from schemas import UserCreate
-from crud import insert_user
-from utils.auth import hash_password
+from schemas import UserCreate, UserLogin
+from crud import insert_user, get_user_by_username
+from utils.auth import hash_password, verify_password
 from db import get_db
 
 router = APIRouter(tags=["auth"])
@@ -21,3 +21,27 @@ def register_user(user: UserCreate, conn = Depends(get_db)):
             status_code=400,
             detail="Username already exists"
         )
+@router.post("/login")
+def login_user(form: UserLogin, conn = Depends(get_db)):
+    username = form.username
+    password = form.password
+
+    if not username or not password:
+        raise HTTPException(status_code=400, detail="Username or password is required")
+
+    user = get_user_by_username(conn, username)
+
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    user_id = user[0]
+    stored_password_hash = user[1]
+
+    if verify_password(password, stored_password_hash):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    return {
+        "message": "Login successful",
+        "user_id": user_id,
+        "username": username,
+    }
