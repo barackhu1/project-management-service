@@ -3,7 +3,16 @@ import psycopg2.extras
 def cursor(conn):
     return conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-def insert_user(conn, user_data):
-    with cursor(conn) as cur:
-        cur.execute('INSERT INTO users (username, password) VALUES (%s, %s)', user_data)
-    conn.commit()
+def insert_user(conn, username, hashed_password):
+    with conn.cursor() as cur:
+        try:
+            cur.execute(
+                "INSERT INTO users (username, password) VALUES (%s, %s) RETURNING user_id, username",
+                (username, hashed_password)
+            )
+            result = cur.fetchone()
+            conn.commit()
+            return {"user_id": result[0], "username": result[1]}
+        except Exception as e:
+            conn.rollback()
+            raise e
