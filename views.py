@@ -1,3 +1,7 @@
 from fastapi import APIRouter
 
-router = APIRouter(prefix="/views", tags=["views"])
+router = APIRouter(tags=["views"])
+
+@router.get("/")
+def root():
+    return {"message": "FastAPI is running!"}
