@@ -21,6 +21,7 @@ def register_user(user: UserCreate, conn = Depends(get_db)):
             status_code=400,
             detail="Username already exists"
         )
+
 @router.post("/login")
 def login_user(form: UserLogin, conn = Depends(get_db)):
     username = form.username
@@ -35,9 +36,9 @@ def login_user(form: UserLogin, conn = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     user_id = user[0]
-    stored_password_hash = user[1]
+    stored_password_hash = user[2]
 
-    if verify_password(password, stored_password_hash):
+    if not verify_password(password, stored_password_hash):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     return {
