@@ -30,3 +30,14 @@ def get_user_projects(conn, user_id: int):
             ORDER BY p.created_at DESC
         """, (user_id,))
         return [dict(row) for row in cur.fetchall()]
+
+def get_project_by_id(conn, project_id: int, user_id: int):
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT p.project_id, p.name, p.description, p.owner_id, p.created_at, pa.role
+            FROM projects p
+            JOIN project_access pa ON p.project_id = pa.project_id
+            WHERE p.project_id = %s AND pa.user_id = %s
+        """, (project_id, user_id))
+        row = cur.fetchone()
+        return dict(row) if row else None
