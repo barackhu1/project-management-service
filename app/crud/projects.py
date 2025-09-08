@@ -53,3 +53,16 @@ def update_project(conn, project_id: int, name: str, description: str):
         project = cur.fetchone()
         conn.commit()
         return dict(project) if project else None
+
+def delete_project(conn, project_id: int, user_id: int):
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT 1 FROM project_access
+            WHERE project_id = %s AND user_id = %s AND role = 'owner'
+        """, (project_id, user_id))
+        if not cur.fetchone():
+            return False
+
+        cur.execute("DELETE FROM projects WHERE project_id = %s", (project_id,))
+        conn.commit()
+        return True

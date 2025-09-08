@@ -7,7 +7,8 @@ from app.schemas.projects import ProjectCreate, ProjectUpdate
 from app.crud.projects import (create_project,
                                get_user_projects,
                                get_project_by_id,
-                               update_project)
+                               update_project,
+                               delete_project)
 
 router = APIRouter(tags=["views"])
 
@@ -61,4 +62,18 @@ def update_project_info(
     return {
         "status_code": status.HTTP_200_OK,
         "updated": updated
+    }
+
+@router.delete("/projects/{project_id}")
+def delete_project_endpoint(
+    project_id: int,
+    user_id: int = Depends(get_current_user_id),
+    conn = Depends(get_db)
+):
+    success = delete_project(conn, project_id, user_id)
+    if not success:
+        raise HTTPException(403, "Only the owner can delete this project")
+    return {
+        "status_code": status.HTTP_200_OK,
+        "message": "Project deleted"
     }
