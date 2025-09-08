@@ -3,8 +3,11 @@ from fastapi.params import Depends
 
 from app.utils.auth_dependency import get_current_user_id
 from app.utils.db import get_db
-from app.schemas.schemas import ProjectCreate
-from app.crud.projects import create_project, get_user_projects, get_project_by_id
+from app.schemas.schemas import ProjectCreate, ProjectUpdate
+from app.crud.projects import (create_project,
+                               get_user_projects,
+                               get_project_by_id,
+                               update_project)
 
 router = APIRouter(tags=["views"])
 
@@ -30,11 +33,32 @@ def list_projects(user_id: int = Depends(get_current_user_id),
     }
 
 @router.get("/projects/{project_id}/info")
-def get_project_info(project_id: int, user_id: int = Depends(get_current_user_id), conn = Depends(get_db)):
+def get_project_info(project_id: int,
+                     user_id: int = Depends(get_current_user_id),
+                     conn = Depends(get_db)):
     project = get_project_by_id(conn, project_id, user_id)
     if not project:
         raise HTTPException(404, "Project not found or no access")
     return {
         "status_code": status.HTTP_200_OK,
         "project": project
+    }
+
+@router.put("/projects/{project_id}/info")
+def update_project_info(
+    project_id: int,
+    data: ProjectUpdate,
+    user_id: int = Depends(get_current_user_id),
+    conn = Depends(get_db)
+):
+    project = get_project_by_id(conn, project_id, user_id)
+    if not project:
+        raise HTTPException(404, "Project not found or no access")
+
+    updated = update_project(conn, project_id, data.name, data.description)
+    if not updated:
+        raise HTTPException(500, "Failed to update project")
+    return {
+        "status_code": status.HTTP_200_OK,
+        "updated": updated
     }

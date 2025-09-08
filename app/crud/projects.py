@@ -41,3 +41,15 @@ def get_project_by_id(conn, project_id: int, user_id: int):
         """, (project_id, user_id))
         row = cur.fetchone()
         return dict(row) if row else None
+
+def update_project(conn, project_id: int, name: str, description: str):
+    with conn.cursor() as cur:
+        cur.execute("""
+            UPDATE projects
+            SET name = %s, description = %s
+            WHERE project_id = %s
+            RETURNING project_id, name, description, owner_id, created_at
+        """, (name, description, project_id))
+        project = cur.fetchone()
+        conn.commit()
+        return dict(project) if project else None

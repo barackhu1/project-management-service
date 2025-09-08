@@ -12,3 +12,6 @@ class UserLogin(BaseModel):
 class ProjectCreate(BaseModel):
     name: str
     description: Optional[str] = None
+
+class ProjectUpdate(ProjectCreate):
+    pass
