@@ -1,6 +1,5 @@
 from fastapi import FastAPI
-import auth
-import views
+from app.routers import auth, views
 
 app = FastAPI()
 

@@ -1,8 +1,3 @@
-import psycopg2.extras
-
-def cursor(conn):
-    return conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-
 def insert_user(conn, username, hashed_password):
     with conn.cursor() as cur:
         try:
