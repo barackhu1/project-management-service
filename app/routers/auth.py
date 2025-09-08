@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 
 from app.schemas.schemas import UserCreate, UserLogin
 from app.crud.users import insert_user, get_user_by_username
@@ -24,7 +25,7 @@ def register_user(user: UserCreate, conn = Depends(get_db)):
         )
 
 @router.post("/login")
-def login_user(form: UserLogin, conn = Depends(get_db)):
+def login_user(form: OAuth2PasswordRequestForm = Depends(), conn = Depends(get_db)):
     username = form.username
     password = form.password
 
