@@ -3,7 +3,7 @@ from fastapi.params import Depends
 
 from app.utils.auth_dependency import get_current_user_id
 from app.utils.db import get_db
-from app.schemas.schemas import ProjectCreate, ProjectUpdate
+from app.schemas.projects import ProjectCreate, ProjectUpdate
 from app.crud.projects import (create_project,
                                get_user_projects,
                                get_project_by_id,
