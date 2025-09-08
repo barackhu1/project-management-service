@@ -1,9 +1,12 @@
+import psycopg2
 from dotenv import load_dotenv
 from psycopg2 import connect
 from psycopg2._psycopg import connection
 from typing import Any, Generator
 
-from config import (DB_NAME,
+from psycopg2.extras import DictCursor
+
+from app.config import (DB_NAME,
                     DB_USER,
                     DB_PASSWORD,
                     DB_HOST)
@@ -17,6 +20,7 @@ def get_db() -> Generator[connection, Any, None]:
         password=DB_PASSWORD,
         host=DB_HOST,
     )
+    conn.cursor_factory = DictCursor
     try:
         yield conn
     finally:

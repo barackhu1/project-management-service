@@ -3,7 +3,7 @@ import jwt
 from datetime import datetime, timedelta
 from fastapi import HTTPException, status
 
-from config import SECRET_KEY
+from app.config import SECRET_KEY
 
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")

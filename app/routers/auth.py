@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 
-from schemas import UserCreate, UserLogin
-from crud import insert_user, get_user_by_username
-from utils.auth import hash_password, verify_password, create_access_token
-from db import get_db
+from app.schemas.schemas import UserCreate, UserLogin
+from app.crud.users import insert_user, get_user_by_username
+from app.utils.auth import hash_password, verify_password, create_access_token
+from app.utils.db import get_db
 
 router = APIRouter(tags=["auth"])
 
