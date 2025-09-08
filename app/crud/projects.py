@@ -19,3 +19,14 @@ def create_project(conn, name: str, description: str, owner_id: int):
         conn.commit()
 
         return dict(project)
+
+def get_user_projects(conn, user_id: int):
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT p.project_id, p.name, p.description, p.owner_id, p.created_at, pa.role
+            FROM projects p
+            JOIN project_access pa ON p.project_id = pa.project_id
+            WHERE pa.user_id = %s
+            ORDER BY p.created_at DESC
+        """, (user_id,))
+        return [dict(row) for row in cur.fetchall()]
