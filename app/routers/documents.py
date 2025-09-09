@@ -11,10 +11,9 @@ from app.crud.documents import (create_document,
                                 get_document_by_id,
                                 update_document_file,
                                 delete_document,)
+from app.config import UPLOADS_PATH
 
 router = APIRouter(tags=["documents"])
-
-UPLOADS_PATH = "../uploads"
 
 @router.post("/project/{project_id}/documents")
 async def upload_document(
