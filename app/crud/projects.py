@@ -54,15 +54,34 @@ def update_project(conn, project_id: int, name: str, description: str):
         conn.commit()
         return dict(project) if project else None
 
-def delete_project(conn, project_id: int, user_id: int):
+def user_has_access_to_project(conn, project_id: int, user_id: int) -> bool:
     with conn.cursor() as cur:
         cur.execute("""
             SELECT 1 FROM project_access
-            WHERE project_id = %s AND user_id = %s AND role = 'owner'
+            WHERE project_id = %s AND user_id = %s
         """, (project_id, user_id))
-        if not cur.fetchone():
-            return False
+        return cur.fetchone() is not None
+
+def delete_project(conn, project_id: int, user_id: int):
+    with conn.cursor() as cur:
+        if not user_has_access_to_project(conn, project_id, user_id):
+            return None
 
         cur.execute("DELETE FROM projects WHERE project_id = %s", (project_id,))
         conn.commit()
         return True
+
+def create_document(conn, project_id: int, filename: str, file_path: str, uploaded_by: int):
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            INSERT INTO documents (project_id, filename, file_path, uploaded_by)
+            VALUES (%s, %s, %s, %s)
+            RETURNING document_id, filename, file_path, uploaded_by, uploaded_at
+            """,
+            (project_id, filename, file_path, uploaded_by)
+        )
+        doc = cur.fetchone()
+        conn.commit()
+        return dict(doc)
+
