@@ -37,3 +37,21 @@ def get_document_by_id(conn, document_id: int, user_id: int):
         """, (document_id, user_id))
         row = cur.fetchone()
         return dict(row) if row else None
+
+def update_document_file(conn, document_id: int,
+                         filename: str,
+                         file_path: str,
+                         uploaded_by: int):
+    with conn.cursor() as cur:
+        cur.execute("""
+            UPDATE documents
+            SET filename = %s,
+                file_path = %s,
+                uploaded_by = %s,
+                uploaded_at = NOW()
+            WHERE document_id = %s
+            RETURNING document_id, filename, file_path, project_id, uploaded_by, uploaded_at
+        """, (filename, file_path, uploaded_by, document_id))
+        doc = cur.fetchone()
+        conn.commit()
+        return dict(doc) if doc else None

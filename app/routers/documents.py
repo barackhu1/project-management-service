@@ -5,7 +5,8 @@ from app.utils.auth_dependency import get_current_user_id
 from app.utils.db import get_db, user_has_access_to_project
 from app.crud.documents import (create_document,
                                 get_documents_by_project,
-                                get_document_by_id)
+                                get_document_by_id,
+                                update_document_file,)
 
 router = APIRouter(tags=["documents"])
 
@@ -65,5 +66,35 @@ def download_document(
     return FileResponse(
         path=file_path,
         filename=document["filename"],
-        media_type="application/octet-stream"  # Generic binary
+        media_type="application/octet-stream"
     )
+
+@router.put("/document/{document_id}")
+async def update_document(
+    document_id: int,
+    file: UploadFile = File(...),
+    user_id: int = Depends(get_current_user_id),
+    conn = Depends(get_db)
+):
+    document = get_document_by_id(conn, document_id, user_id)
+    if not document:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Document not found or no access to project")
+
+    project_id = document["project_id"]
+    file_location = f"{UPLOADS_PATH}/{project_id}_{file.filename}"
+
+    try:
+        with open(file_location, "wb") as f:
+            f.write(await file.read())
+    except Exception as e:
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, f"Failed to save file: {str(e)}")
+
+    updated_doc = update_document_file(conn, document_id, file.filename, file_location, user_id)
+    if not updated_doc:
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Failed to update document in database")
+
+    return {
+        "status_code": status.HTTP_200_OK,
+        "message": "Document updated successfully",
+        "document": updated_doc
+    }
