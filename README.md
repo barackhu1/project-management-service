@@ -88,23 +88,27 @@ pytest tests/ -v
 project-management-service/
 ├── app/
 │   ├── main.py
+│   ├── .env
+│   ├── config.py
 │   ├── routers/
 │   │   ├── auth.py
 │   │   ├── projects.py
 │   │   └── documents.py
 │   ├── crud/
 │   │   ├── projects.py
-│   │   └── documents.py
+│   │   ├── documents.py
+│   │   └── users.py
 │   ├── schemas/
-│   │   └── schemas.py
-│   ├── utils/
-│   │   ├── auth.py
-│   │   └── auth_dependency.py
-│   └── database.py
+│   │   ├── projects.py
+│   │   └── users.py
+│   └── utils/
+│       ├── auth.py
+│       ├── auth_dependency.py
+│       └── db.py
 ├── uploads/                  
-├── tests/                    
-├── schema.sql                
-├── .env                      
+├── tests/
+│   └── test_projects.py                    
+├── schema.sql              
 ├── requirements.txt
 └── README.md
 ```
