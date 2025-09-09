@@ -55,3 +55,22 @@ def update_document_file(conn, document_id: int,
         doc = cur.fetchone()
         conn.commit()
         return dict(doc) if doc else None
+
+def delete_document(conn, document_id: int, user_id: int):
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT d.file_path
+            FROM documents d
+            JOIN project_access pa ON d.project_id = pa.project_id
+            WHERE d.document_id = %s AND pa.user_id = %s
+        """, (document_id, user_id))
+        result = cur.fetchone()
+        if not result:
+            return False
+
+        file_path = result["file_path"]
+
+        cur.execute("DELETE FROM documents WHERE document_id = %s", (document_id,))
+        conn.commit()
+
+        return file_path

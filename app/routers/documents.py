@@ -1,3 +1,5 @@
+import os
+
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, status
 from fastapi.responses import FileResponse
 
@@ -6,7 +8,8 @@ from app.utils.db import get_db, user_has_access_to_project
 from app.crud.documents import (create_document,
                                 get_documents_by_project,
                                 get_document_by_id,
-                                update_document_file,)
+                                update_document_file,
+                                delete_document,)
 
 router = APIRouter(tags=["documents"])
 
@@ -97,4 +100,27 @@ async def update_document(
         "status_code": status.HTTP_200_OK,
         "message": "Document updated successfully",
         "document": updated_doc
+    }
+
+@router.delete("/document/{document_id}")
+def delete_document_endpoint(
+    document_id: int,
+    user_id: int = Depends(get_current_user_id),
+    conn = Depends(get_db)
+):
+    file_path = delete_document(conn, document_id, user_id)
+    if not file_path:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Document not found or no access to project")
+
+    try:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        else:
+            pass
+    except Exception as e:
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, f"Failed to delete file from disk: {str(e)}")
+
+    return {
+        "status_code": status.HTTP_200_OK,
+        "message": "Document deleted successfully"
     }
