@@ -84,6 +84,7 @@ async def update_document(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Document not found or no access to project")
 
     project_id = document["project_id"]
+    old_file_path = document["file_path"]
     file_location = f"{UPLOADS_PATH}/{project_id}_{file.filename}"
 
     try:
@@ -94,7 +95,12 @@ async def update_document(
 
     updated_doc = update_document_file(conn, document_id, file.filename, file_location, user_id)
     if not updated_doc:
+        if os.path.exists(file_location):
+            os.remove(file_location)
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Failed to update document in database")
+
+    if os.path.exists(old_file_path) and old_file_path != file_location:
+        os.remove(old_file_path)
 
     return {
         "status_code": status.HTTP_200_OK,
