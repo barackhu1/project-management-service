@@ -99,9 +99,11 @@ async def upload_document(
 
     doc = create_document(conn, project_id, file.filename, file_location, user_id)
 
-    return {"status_code": status.HTTP_201_CREATED,
-            "message": "File uploaded",
-            "document": doc}
+    return {
+        "status_code": status.HTTP_201_CREATED,
+        "message": "File uploaded",
+        "document": doc
+    }
 
 @router.get("/project/{project_id}/documents")
 def list_documents(
@@ -111,5 +113,9 @@ def list_documents(
 ):
     documents = get_documents_by_project(conn, project_id, user_id)
     if documents is None:
-        raise HTTPException(404, "Project not found or no access")
-    return {"documents": documents}
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Project not found or no access")
+
+    return {
+        "status_code": status.HTTP_200_OK,
+        "documents": documents
+    }
