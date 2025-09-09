@@ -1,9 +1,11 @@
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, status
+from fastapi.responses import FileResponse
 
 from app.utils.auth_dependency import get_current_user_id
 from app.utils.db import get_db, user_has_access_to_project
 from app.crud.documents import (create_document,
-                               get_documents_by_project,)
+                                get_documents_by_project,
+                                get_document_by_id)
 
 router = APIRouter(tags=["documents"])
 
@@ -45,3 +47,23 @@ def list_documents(
         "status_code": status.HTTP_200_OK,
         "documents": documents
     }
+
+@router.get("/document/{document_id}")
+def download_document(
+    document_id: int,
+    user_id: int = Depends(get_current_user_id),
+    conn = Depends(get_db)
+):
+    document = get_document_by_id(conn, document_id, user_id)
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found or no access to project"
+        )
+    file_path = document["file_path"]
+
+    return FileResponse(
+        path=file_path,
+        filename=document["filename"],
+        media_type="application/octet-stream"  # Generic binary
+    )
