@@ -1,3 +1,5 @@
+import os
+
 from app.utils.db import user_has_access_to_project
 
 def create_project(conn, name: str, description: str, owner_id: int):
@@ -58,8 +60,22 @@ def update_project(conn, project_id: int, name: str, description: str):
 
 def delete_project(conn, project_id: int, user_id: int):
     with conn.cursor() as cur:
-        if not user_has_access_to_project(conn, project_id, user_id):
-            return None
+        cur.execute("""
+            SELECT 1 FROM project_access
+            WHERE project_id = %s AND user_id = %s AND role = 'owner'
+        """, (project_id, user_id))
+        if not cur.fetchone():
+            return False
+
+        cur.execute("SELECT file_path FROM documents WHERE project_id = %s", (project_id,))
+        file_paths = [row["file_path"] for row in cur.fetchall()]
+
+        for file_path in file_paths:
+            try:
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+            except Exception as e:
+                print(f"Failed to delete file {file_path}: {str(e)}")
 
         cur.execute("DELETE FROM projects WHERE project_id = %s", (project_id,))
         conn.commit()

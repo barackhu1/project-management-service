@@ -3,10 +3,9 @@ import jwt
 from datetime import datetime, timedelta
 from fastapi import HTTPException, status
 
-from app.config import SECRET_KEY
+from app.config import CHARACTER_CODE, EXPIRATION_TIME, ENCRYPTION_ALGORITHM
 
-ENCRYPTION_ALGORITHMIC = "HS256"
-CHARACTER_CODE = "utf-8"
+from app.config import SECRET_KEY
 
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode(CHARACTER_CODE), bcrypt.gensalt()).decode(CHARACTER_CODE)
@@ -16,13 +15,13 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 def create_access_token(data: dict) -> str:
     to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=60)
+    expire = datetime.utcnow() + timedelta(minutes=EXPIRATION_TIME)
     to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ENCRYPTION_ALGORITHMIC)
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ENCRYPTION_ALGORITHM)
 
 def decode_access_token(token: str) -> dict:
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ENCRYPTION_ALGORITHMIC])
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ENCRYPTION_ALGORITHM])
         return payload
     except jwt.ExpiredSignatureError:
         raise HTTPException(

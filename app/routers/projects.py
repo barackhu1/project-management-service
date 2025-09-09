@@ -75,7 +75,7 @@ def delete_project_endpoint(
 ):
     success = delete_project(conn, project_id, user_id)
     if not success:
-        raise HTTPException(403, "Only the owner can delete this project")
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Only the owner can delete this project")
     return {
         "status_code": status.HTTP_200_OK,
         "message": "Project deleted"
