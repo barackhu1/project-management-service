@@ -1,4 +1,5 @@
 import os
+import uuid
 
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, status
 from fastapi.responses import FileResponse
@@ -25,7 +26,10 @@ async def upload_document(
     if not user_has_access_to_project(conn, project_id, user_id):
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Project not found or no access")
 
-    file_location = f"{UPLOADS_PATH}/{project_id}_{file.filename}"
+    filename = os.path.splitext(file.filename)[0]
+    file_extension = os.path.splitext(file.filename)[1]
+    unique_id = str(uuid.uuid4())[:8]
+    file_location = f"{UPLOADS_PATH}/{project_id}_{filename}_{unique_id}{file_extension}"
     with open(file_location, "wb") as f:
         f.write(await file.read())
 
