@@ -1,3 +1,5 @@
+from app.utils.db import user_has_access_to_project
+
 def create_project(conn, name: str, description: str, owner_id: int):
     with conn.cursor() as cur:
         # Insert project
@@ -54,14 +56,6 @@ def update_project(conn, project_id: int, name: str, description: str):
         conn.commit()
         return dict(project) if project else None
 
-def user_has_access_to_project(conn, project_id: int, user_id: int) -> bool:
-    with conn.cursor() as cur:
-        cur.execute("""
-            SELECT 1 FROM project_access
-            WHERE project_id = %s AND user_id = %s
-        """, (project_id, user_id))
-        return cur.fetchone() is not None
-
 def delete_project(conn, project_id: int, user_id: int):
     with conn.cursor() as cur:
         if not user_has_access_to_project(conn, project_id, user_id):
@@ -71,29 +65,25 @@ def delete_project(conn, project_id: int, user_id: int):
         conn.commit()
         return True
 
-def create_document(conn, project_id: int, filename: str, file_path: str, uploaded_by: int):
-    with conn.cursor() as cur:
-        cur.execute(
-            """
-            INSERT INTO documents (project_id, filename, file_path, uploaded_by)
-            VALUES (%s, %s, %s, %s)
-            RETURNING document_id, filename, file_path, uploaded_by, uploaded_at
-            """,
-            (project_id, filename, file_path, uploaded_by)
-        )
-        doc = cur.fetchone()
-        conn.commit()
-        return dict(doc)
-
-def get_documents_by_project(conn, project_id: int, user_id: int):
-    if not user_has_access_to_project(conn, project_id, user_id):
-        return None
-
+def get_project_role(conn, project_id: int, user_id: int) -> str:
     with conn.cursor() as cur:
         cur.execute("""
-            SELECT document_id, filename, file_path, uploaded_by, uploaded_at
-            FROM documents
-            WHERE project_id = %s
-            ORDER BY uploaded_at DESC
-        """, (project_id,))
-        return [dict(row) for row in cur.fetchall()]
+            SELECT role FROM project_access
+            WHERE project_id = %s AND user_id = %s
+        """, (project_id, user_id))
+        row = cur.fetchone()
+        return row["role"] if row else None
+
+def get_user_by_username(conn, username: str):
+    with conn.cursor() as cur:
+        cur.execute("SELECT user_id, username FROM users WHERE username = %s", (username,))
+        return cur.fetchone()
+
+def add_user_to_project(conn, project_id: int, user_id: int, role: str = "participant"):
+    with conn.cursor() as cur:
+        cur.execute(
+            "INSERT INTO project_access (project_id, user_id, role) VALUES (%s, %s, %s)",
+            (project_id, user_id, role)
+        )
+        conn.commit()
+        return True
