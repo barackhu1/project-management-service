@@ -64,3 +64,26 @@ def delete_project(conn, project_id: int, user_id: int):
         cur.execute("DELETE FROM projects WHERE project_id = %s", (project_id,))
         conn.commit()
         return True
+
+def get_project_role(conn, project_id: int, user_id: int) -> str:
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT role FROM project_access
+            WHERE project_id = %s AND user_id = %s
+        """, (project_id, user_id))
+        row = cur.fetchone()
+        return row["role"] if row else None
+
+def get_user_by_username(conn, username: str):
+    with conn.cursor() as cur:
+        cur.execute("SELECT user_id, username FROM users WHERE username = %s", (username,))
+        return cur.fetchone()
+
+def add_user_to_project(conn, project_id: int, user_id: int, role: str = "participant"):
+    with conn.cursor() as cur:
+        cur.execute(
+            "INSERT INTO project_access (project_id, user_id, role) VALUES (%s, %s, %s)",
+            (project_id, user_id, role)
+        )
+        conn.commit()
+        return True
