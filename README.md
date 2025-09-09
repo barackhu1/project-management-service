@@ -16,9 +16,6 @@ Built with **FastAPI**, **PostgreSQL**, and **JWT authentication**.
   Upload, download, update, and delete files per project
 - 👥 **Project Sharing**  
   Invite users to projects with participant permissions
-- 🧪 **Tested & Reliable**  
-  Full test suite with `pytest`
-
 ---
 
 ## 🚀 Quick Start
