@@ -10,7 +10,8 @@ from app.crud.projects import (create_project,
                                update_project,
                                delete_project,
                                create_document,
-                               user_has_access_to_project)
+                               user_has_access_to_project,
+                               get_documents_by_project,)
 
 router = APIRouter(tags=["views"])
 
@@ -101,3 +102,14 @@ async def upload_document(
     return {"status_code": status.HTTP_201_CREATED,
             "message": "File uploaded",
             "document": doc}
+
+@router.get("/project/{project_id}/documents")
+def list_documents(
+    project_id: int,
+    user_id: int = Depends(get_current_user_id),
+    conn = Depends(get_db)
+):
+    documents = get_documents_by_project(conn, project_id, user_id)
+    if documents is None:
+        raise HTTPException(404, "Project not found or no access")
+    return {"documents": documents}
