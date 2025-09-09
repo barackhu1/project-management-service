@@ -25,3 +25,11 @@ def get_db() -> Generator[connection, Any, None]:
         yield conn
     finally:
         conn.close()
+
+def user_has_access_to_project(conn, project_id: int, user_id: int) -> bool:
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT 1 FROM project_access
+            WHERE project_id = %s AND user_id = %s
+        """, (project_id, user_id))
+        return cur.fetchone() is not None
