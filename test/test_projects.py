@@ -49,7 +49,7 @@ def test_create_project_end_to_end():
 def test_list_projects_authenticated():
     # User registration
     register_data = {
-        "username": "alice",
+        "username": "bob",
         "password": "secret123",
     }
     response = client.post("/auth", json=register_data)
