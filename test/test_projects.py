@@ -128,3 +128,35 @@ def test_update_project_info():
     assert updated["project_id"] == project_id
     assert updated["name"] == "New Name"
     assert updated["description"] == "New description"
+
+def test_delete_project_owner():
+    # User registration
+    register_data = {
+        "username": "eve",
+        "password": "loremipsum",
+    }
+    response = client.post("/auth", json=register_data)
+    assert response.status_code in [201, 400]
+
+    # User login
+    token = login_user("eve", "loremipsum")
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Project create
+    project_data = {"name": "Test Project", "description": "For testing"}
+    response = client.post("/projects", json=project_data, headers=headers)
+    assert response.status_code == 200
+    created_project = response.json()["project"]
+    project_id = created_project["project_id"]
+
+    # Project delete
+    response = client.delete(f"/projects/{project_id}", headers=headers)
+
+    # Assert
+    assert response.status_code == 200
+    data = response.json()
+    assert data["message"] == "Project deleted"
+
+    # Verify project no longer exists
+    response = client.get(f"/projects/{project_id}/info", headers=headers)
+    assert response.status_code == 404
