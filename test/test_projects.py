@@ -10,14 +10,7 @@ from app.main import app
 
 client = TestClient(app)
 
-# Mock data
-mock_project = {
-    "project_id": 1,
-    "name": "Test Project",
-    "description": "Test",
-    "owner_id": 1,
-    "created_at": "2025-01-01T00:00:00"
-}
+project_data = {"name": "Test Project", "description": "For testing"}
 
 def login_user(username: str, password: str):
     login_data = {"username": username, "password": password}
@@ -25,7 +18,7 @@ def login_user(username: str, password: str):
     assert response.status_code == 200
     return response.json()["access_token"]
 
-def test_create_project_end_to_end():
+def test_create_project_authenticated():
     # User registration
     register_data = {
         "username": "alice",
@@ -39,7 +32,6 @@ def test_create_project_end_to_end():
     headers = {"Authorization": f"Bearer {token}"}
 
     # Create project
-    project_data = {"name": "My Project", "description": "Test"}
     response = client.post("/projects", json=project_data, headers=headers)
 
     # Assert
@@ -80,7 +72,6 @@ def test_get_project_info_authenticated():
     headers = {"Authorization": f"Bearer {token}"}
 
     # Project create
-    project_data = {"name": "Test Project", "description": "For testing"}
     response = client.post("/projects", json=project_data, headers=headers)
     assert response.status_code == 200
     created_project = response.json()["project"]
@@ -110,7 +101,6 @@ def test_update_project_info():
     headers = {"Authorization": f"Bearer {token}"}
 
     # Project create
-    project_data = {"name": "Test Project", "description": "For testing"}
     response = client.post("/projects", json=project_data, headers=headers)
     assert response.status_code == 200
     created_project = response.json()["project"]
@@ -143,7 +133,7 @@ def test_delete_project_owner():
     headers = {"Authorization": f"Bearer {token}"}
 
     # Project create
-    project_data = {"name": "Test Project", "description": "For testing"}
+
     response = client.post("/projects", json=project_data, headers=headers)
     assert response.status_code == 200
     created_project = response.json()["project"]
