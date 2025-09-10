@@ -95,3 +95,36 @@ def test_get_project_info_authenticated():
     assert "project" in data
     assert data["project"]["project_id"] == project_id
     assert data["project"]["name"] == "Test Project"
+
+def test_update_project_info():
+    # User registration
+    register_data = {
+        "username": "charlie",
+        "password": "very$3CR3T123",
+    }
+    response = client.post("/auth", json=register_data)
+    assert response.status_code in [201, 400]
+
+    # User login
+    token = login_user("charlie", "very$3CR3T123")
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Project create
+    project_data = {"name": "Test Project", "description": "For testing"}
+    response = client.post("/projects", json=project_data, headers=headers)
+    assert response.status_code == 200
+    created_project = response.json()["project"]
+    project_id = created_project["project_id"]
+
+    # Project update
+    update_data = {"name": "New Name", "description": "New description"}
+    response = client.put(f"/projects/{project_id}/info", json=update_data, headers=headers)
+
+    # Assert
+    assert response.status_code == 200
+    data = response.json()
+    assert "updated" in data
+    updated = data["updated"]
+    assert updated["project_id"] == project_id
+    assert updated["name"] == "New Name"
+    assert updated["description"] == "New description"
