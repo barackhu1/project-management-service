@@ -8,13 +8,12 @@ from app.utils.db import get_db
 
 router = APIRouter(tags=["auth"])
 
-@router.post("/auth")
+@router.post("/auth", status_code=status.HTTP_201_CREATED)
 def register_user(user: UserCreate, conn = Depends(get_db)):
     hashed = hash_password(user.password)
     try:
         db_user = insert_user(conn, user.username, hashed)
         return {
-            "status_code": status.HTTP_201_CREATED,
             "message": "User registered successfully",
             "user": db_user,
         }

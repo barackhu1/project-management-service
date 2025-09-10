@@ -88,7 +88,6 @@ pytest tests/ -v
 project-management-service/
 ├── app/
 │   ├── main.py
-│   ├── .env
 │   ├── config.py
 │   ├── routers/
 │   │   ├── auth.py
@@ -107,7 +106,8 @@ project-management-service/
 │       └── db.py
 ├── uploads/                  
 ├── tests/
-│   └── test_projects.py                    
+│   └── test_projects.py   
+├── .env                 
 ├── schema.sql              
 ├── requirements.txt
 └── README.md

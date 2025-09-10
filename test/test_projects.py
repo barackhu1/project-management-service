@@ -36,9 +36,9 @@ def test_create_project_end_to_end():
 
     # User login
     token = login_user("alice", "secret123")
+    headers = {"Authorization": f"Bearer {token}"}
 
     # Create project
-    headers = {"Authorization": f"Bearer {token}"}
     project_data = {"name": "My Project", "description": "Test"}
     response = client.post("/projects", json=project_data, headers=headers)
 
@@ -49,7 +49,7 @@ def test_create_project_end_to_end():
 def test_list_projects_authenticated():
     # User registration
     register_data = {
-        "username": "alice",
+        "username": "bob",
         "password": "secret123",
     }
     response = client.post("/auth", json=register_data)
@@ -57,11 +57,41 @@ def test_list_projects_authenticated():
 
     # User login
     token = login_user("bob", "secret123")
+    headers = {"Authorization": f"Bearer {token}"}
 
     # List projects
-    headers = {"Authorization": f"Bearer {token}"}
     response = client.get("/projects", headers=headers)
 
     # Assert
     assert response.status_code == 200
     assert "projects" in response.json()
+
+def test_get_project_info_authenticated():
+    # User registration
+    register_data = {
+        "username": "adam",
+        "password": "321terces",
+    }
+    response = client.post("/auth", json=register_data)
+    assert response.status_code in [201, 400]
+
+    # User login
+    token = login_user("adam", "321terces")
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Project create
+    project_data = {"name": "Test Project", "description": "For testing"}
+    response = client.post("/projects", json=project_data, headers=headers)
+    assert response.status_code == 200
+    created_project = response.json()["project"]
+    project_id = created_project["project_id"]
+
+    # Get project info
+    response = client.get(f"/projects/{project_id}/info", headers=headers)
+
+    # Assert
+    assert response.status_code == 200
+    data = response.json()
+    assert "project" in data
+    assert data["project"]["project_id"] == project_id
+    assert data["project"]["name"] == "Test Project"
