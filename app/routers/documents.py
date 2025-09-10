@@ -88,7 +88,11 @@ async def update_document(
 
     project_id = document["project_id"]
     old_file_path = document["file_path"]
-    file_location = f"{UPLOADS_PATH}/{project_id}_{file.filename}"
+
+    filename = os.path.splitext(file.filename)[0]
+    file_extension = os.path.splitext(file.filename)[1]
+    unique_id = str(uuid.uuid4())[:8]
+    file_location = f"{UPLOADS_PATH}/{project_id}_{filename}_{unique_id}{file_extension}"
 
     try:
         with open(file_location, "wb") as f:
